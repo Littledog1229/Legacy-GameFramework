@@ -1,0 +1,24 @@
+# Misc
+.idea
+
+# Core Engine and Sandbox
+Engine/bin
+Engine/obj
+EngineSandbox/bin
+EngineSandbox/obj
+Prototype/bin
+Prototype/obj
+
+# Networking
+NetCommon/bin
+NetCommon/obj
+NetTestCommon/bin
+NetTestCommon/obj
+NetServer/bin
+NetServer/obj
+NetClient/bin
+NetClient/obj
+
+# Sharp Minecraft
+SharpMinecraft/bin
+SharpMinecraft/obj

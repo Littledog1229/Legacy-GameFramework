@@ -1,0 +1,10 @@
+﻿TODO:
+ . World:
+    : Chunks:
+        : Rendering:
+            : Texture Atlas Preparation
+            : Block Models
+    : Player:
+        : Perspective Camera
+        : 3D Movement Input
+        : Physics

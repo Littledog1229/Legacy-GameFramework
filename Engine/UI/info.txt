@@ -1,0 +1,10 @@
+﻿When does the focus update?
+ . When an element is added or removed from a focused panel
+ . When an element's focusability has been changed, and the parent panel is focused
+ . When a panel is added or removed from a focused panel
+ . When a panel's focusability has been changed, and the parent panel is focused
+ . When the mouse moves
+ 
+When will the focus be updated?
+ . The focus will be updated at the end of the current frame (is the focus was marked as "dirty")
+ 
