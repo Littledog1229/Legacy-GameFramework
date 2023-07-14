@@ -7,7 +7,7 @@ public sealed class IndexBuffer : Buffer {
     public override void bind()   => GL.BindBuffer(BufferTarget.ElementArrayBuffer, ObjectHandle);
     public override void unbind() => GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
 
-    public IndexBuffer() { RenderManager.registerIndexBuffer(this); Console.WriteLine(ObjectHandle); }
+    public IndexBuffer() { RenderManager.registerIndexBuffer(this); }
     
     public void bufferData<T>(T[] data, BufferUsageHint hint = BufferUsageHint.StaticDraw) where T : unmanaged {
         bind();

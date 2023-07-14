@@ -7,7 +7,7 @@ public sealed class VertexBuffer : Buffer {
     public override void bind()   => GL.BindBuffer(BufferTarget.ArrayBuffer, ObjectHandle);
     public override void unbind() => GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 
-    public VertexBuffer() { RenderManager.registerVertexBuffer(this); Console.WriteLine(ObjectHandle); }
+    public VertexBuffer() { RenderManager.registerVertexBuffer(this); }
     
     public void bufferData(float[] data, BufferUsageHint hint = BufferUsageHint.StaticDraw) {
         bind();

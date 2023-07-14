@@ -11,4 +11,10 @@
       <ProjectReference Include="..\ApplicationCore\ApplicationCore.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <EmbeddedResource Include="Resource\Texture\temp_player.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+    </ItemGroup>
+
 </Project>

@@ -17,8 +17,8 @@ public sealed class ApplicationManager : GameWindow {
     }
 
     private double last_time = 0.0d;
-    private double fixed_update_interval   = 0.02d;
-    private double time_since_fixed_update = 0.0d;
+    private float  fixed_update_interval   = 0.02f;
+    private float  time_since_fixed_update = 0.0f;
     
     public static int WindowWidth  { get; private set; }
     public static int WindowHeight { get; private set; }
@@ -44,14 +44,14 @@ public sealed class ApplicationManager : GameWindow {
         base.OnUnload();
         
         // Unload all engine systems
-        RenderManager.unload();
-        EngineCore.unload();
         Application.unload();
+        EngineCore.unload();
+        RenderManager.unload();
         
         // Destroy all engine systems (to free resources)
-        RenderManager.destroy();
-        EngineCore.destroy();
         Application.destroy();
+        EngineCore.destroy();
+        RenderManager.destroy();
     }
 
     protected override void OnUpdateFrame(FrameEventArgs args) {
@@ -64,7 +64,7 @@ public sealed class ApplicationManager : GameWindow {
         EngineCore.setPreciseDeltaTime(dt);
 
         // Fixed Update
-        time_since_fixed_update += dt;
+        time_since_fixed_update += (float) dt;
         while (time_since_fixed_update >= fixed_update_interval) {
             time_since_fixed_update -= fixed_update_interval;
             

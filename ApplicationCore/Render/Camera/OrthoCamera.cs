@@ -45,7 +45,7 @@ public sealed class OrthoCamera : Camera {
         var aspect_ratio = (float) RenderManager.WindowHeight / (float) RenderManager.WindowWidth;
         var width  = view_size_x * 2.0f;
         var height = width * aspect_ratio;
-        
+
         Projection = Matrix4.CreateOrthographic(width, height, 0.1f, 100.0f);
     }
 }

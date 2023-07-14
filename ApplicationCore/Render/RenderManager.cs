@@ -56,6 +56,8 @@ public static class RenderManager {
         WindowWidth  = width;
         WindowHeight = height;
         
+        GL.Viewport(0, 0, width, height);
+        
         foreach (var camera in cameras)
             camera.resize();
 
@@ -78,8 +80,7 @@ public static class RenderManager {
         foreach (var buffer      in vertex_buffers) { buffer.internalDestroy();    }
         foreach (var buffer      in index_buffers)  { buffer.internalDestroy();    }
         foreach (var (_, shader) in shaders)        { shader.internalDestroy();    }
-        foreach (var texture2d   in texture_2ds)    { texture2d.destroy(); }
-
+        foreach (var texture2d   in texture_2ds)    { texture2d.internalDestroy(); }
         
         vertex_arrays.Clear();
         vertex_buffers.Clear();

@@ -55,7 +55,7 @@ public sealed class InputManager : EngineSystem {
         return Instance;
     }
 
-    public override void lateUpdate() {
+    protected override void lateUpdate() {
         Array.Copy(current_key_states,   previous_key_states,   (int) Keys.LastKey);
         Array.Copy(current_mouse_states, previous_mouse_states, (int) MouseButton.Last);
         

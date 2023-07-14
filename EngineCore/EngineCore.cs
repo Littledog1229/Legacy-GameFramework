@@ -15,7 +15,7 @@ public static class EngineCore {
         Time.PreciseDeltaTime = delta_time;
         Time.DeltaTime        = (float) delta_time;
     }
-    public static void setFixedDeltaTime(double fixed_delta_time) => Time.FixedDeltaTime = fixed_delta_time;
+    public static void setFixedDeltaTime(float fixed_delta_time) => Time.FixedDeltaTime = fixed_delta_time;
 
     public static void initialize()  => ENGINE_SYSTEMS.ForEach(system => system.initialize());
     public static void start()       => ENGINE_SYSTEMS.ForEach(system => system.start());
