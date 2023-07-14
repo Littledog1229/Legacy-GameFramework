@@ -9,6 +9,16 @@ EngineSandbox/obj
 Prototype/bin
 Prototype/obj
 
+# New EngineCore and ApplicationCore
+EngineCore/bin
+EngineCore/obj
+ApplicationCore/bin
+ApplicationCore/obj
+
+# Application Sandbox
+SandboxApplication/bin
+SandboxApplication/obj
+
 # Networking
 NetCommon/bin
 NetCommon/obj
