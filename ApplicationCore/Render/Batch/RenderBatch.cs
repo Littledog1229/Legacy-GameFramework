@@ -4,7 +4,8 @@ using OpenTK.Graphics.OpenGL;
 namespace ApplicationCore.Render.Batch; 
 
 public abstract class RenderBatch<T> where T : struct {
-    public Shader Shader { get; private set; } = null!;
+    public Shader  Shader         { get; private set; } = null!;
+    public Shader? OptionalShader { get; private set; } = null;
     
     public uint MaxVertices { get; }
     public uint MaxIndices  { get; }
@@ -44,14 +45,15 @@ public abstract class RenderBatch<T> where T : struct {
             vertex_array = new VertexArray(ref info);
         }
     }
-    public void begin(Camera.Camera camera) {
+    public void begin(Camera.Camera camera, Shader? optional = null!) {
 #if DEBUG
         if (started)
             throw new Exception("Batch had already been started!");
         started = true;
 #endif
 
-        CurrentCamera = camera;
+        CurrentCamera  = camera;
+        OptionalShader = optional;
     }
     public void end() {
         flush();
@@ -63,8 +65,13 @@ public abstract class RenderBatch<T> where T : struct {
         started = false;
 #endif
     }
+
+    public void destroy() {
+        Shader.destroy();
+        vertex_array.destroy();
+    }
     
-    protected virtual void bindShaderData() { }
+    protected virtual void bindShaderData(Shader shader) { }
     protected virtual void bindResources()  { }
     protected virtual void resetBatch()     { }
 
@@ -79,6 +86,8 @@ public abstract class RenderBatch<T> where T : struct {
         VertexCount += vertices;
         IndexCount += indices;
     }
+    
+    protected virtual void destroyObjects() { }
 
     protected void flush() {
         vertex_array.VertexBuffer.bufferData (Vertices, (int) VertexCount, BufferUsageHint.DynamicDraw);
@@ -86,11 +95,20 @@ public abstract class RenderBatch<T> where T : struct {
 
         vertex_array.bind();
 
-        Shader.bind();
-        Shader.setUniform("uProjection", CurrentCamera.Projection);
-        Shader.setUniform("uView",       CurrentCamera.View);
+        if (OptionalShader != null) {
+            OptionalShader.bind();
+            OptionalShader.setUniform("uProjection", CurrentCamera.Projection);
+            OptionalShader.setUniform("uView",       CurrentCamera.View);
+            
+            bindShaderData(OptionalShader);
+        } else {
+            Shader.bind();
+            Shader.setUniform("uProjection", CurrentCamera.Projection);
+            Shader.setUniform("uView",       CurrentCamera.View);
+            
+            bindShaderData(Shader);
+        }
         
-        bindShaderData();
         bindResources();
         
         vertex_array.drawElements(PrimitiveType.Triangles, (int) IndexCount, DrawElementsType.UnsignedInt, 0);

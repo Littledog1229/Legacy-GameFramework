@@ -6,17 +6,19 @@ namespace ApplicationCore.Render.Camera;
 public abstract class Camera {
     public Matrix4 View       { get; protected set; }
     public Matrix4 Projection { get; protected set; }
-
-    protected Camera() { RenderManager.registerCamera(this); }
-
-    public void destroy() => RenderManager.deregisterCamera(this);
+    
+    public int Width  { get; private set; }
+    public int Height { get; private set; }
     
     public void initialize() {
-        createProjection();
+        resize(RenderManager.WindowWidth, RenderManager.WindowHeight);
         createView();
     }
 
-    public void resize() {
+    public void resize(int width, int height) {
+        Width  = width;
+        Height = height;
+        
         createProjection();
     }
 

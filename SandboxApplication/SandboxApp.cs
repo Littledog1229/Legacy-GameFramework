@@ -19,6 +19,7 @@ public sealed class SandboxApp : Application {
     protected override void initialize() {
         RenderManager.ClearColor = Color4.Gray;
         
-        SceneManager.addScene(new TestScene(), SceneManager.SceneAddMode.Additive);
+        //SceneManager.addScene(new LegacyEditorScene(), SceneManager.SceneAddMode.Additive);
+        SceneManager.addScene(new EditorScene());
     }
 }

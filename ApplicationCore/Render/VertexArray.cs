@@ -107,7 +107,21 @@ public sealed class VertexArray : GLObject {
         VertexBuffer.bind();
 
         foreach (var element in info.Elements) {
-            GL.VertexAttribPointer(element.Index, element.Size, element.Type, element.Normalized, info.Stride, element.Offset);
+            var offset = element.Offset;
+            
+            switch (element.Type) {
+                case VertexAttribPointerType.Int:
+                    GL.VertexAttribIPointer(element.Index, element.Size, VertexAttribIntegerType.Int, info.Stride, new IntPtr(offset));
+                    break;
+                case VertexAttribPointerType.UnsignedInt:
+                    
+                    GL.VertexAttribIPointer(element.Index, element.Size, VertexAttribIntegerType.UnsignedInt, info.Stride, new IntPtr(offset));
+                    break;
+                default:
+                    GL.VertexAttribPointer(element.Index, element.Size, element.Type, element.Normalized, info.Stride, element.Offset);
+                    break;
+            }
+            
             GL.EnableVertexAttribArray(element.Index);
         }
         

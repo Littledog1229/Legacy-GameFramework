@@ -15,6 +15,8 @@ public sealed class PhysicsManager : EngineSystem {
     }
 
     public static void destroyWorld(World world) => Instance.physics_worlds.Remove(world);
+
+    public static void addWorld(World world) => Instance.physics_worlds.Add(world);
     
     public static PhysicsManager create() {
         if (Instance != null!)

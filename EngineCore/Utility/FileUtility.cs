@@ -10,8 +10,7 @@ public static class FileUtility {
         
         try { resource_name = assembly.GetManifestResourceNames().Single(str => str.EndsWith(embedded_path)); }
         catch (Exception) {
-            Console.WriteLine($"Could not get resource: {embedded_path}");
-            return "";
+            throw new Exception($"Could not get resource: {embedded_path}");
         }
 
         using var stream = assembly.GetManifestResourceStream(resource_name);
@@ -29,8 +28,7 @@ public static class FileUtility {
         
         try { resource_name = assembly.GetManifestResourceNames().Single(str => str.EndsWith(embedded_path)); }
         catch (Exception) {
-            Console.WriteLine($"Could not get resource: {embedded_path}");
-            return null;
+            throw new Exception($"Could not get resource: {embedded_path}");
         }
 
         return assembly.GetManifestResourceStream(resource_name);

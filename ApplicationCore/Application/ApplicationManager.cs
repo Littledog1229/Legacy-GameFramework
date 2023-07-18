@@ -121,6 +121,7 @@ public sealed class ApplicationManager : GameWindow {
             throw new ApplicationException("An application has already been created!");
 
         Instance = new(application);
+        RenderManager.resize(application.NativeSettings.Size.X, application.NativeSettings.Size.Y);
 
         EngineCore.setEngineResourceAssembly (Assembly.GetAssembly(typeof(ApplicationManager))!);
         EngineCore.setApplicationAssembly    (Assembly.GetAssembly(application.GetType())!);

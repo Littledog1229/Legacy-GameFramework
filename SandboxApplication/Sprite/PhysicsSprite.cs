@@ -17,7 +17,7 @@ public class PhysicsSprite : SpriteObject {
                 return;
 
             position = value;
-            Body.Position = position.toVector2();
+            Body.Position = position.toPhysicsVector2();
         }
     }
     public override Vector2 Scale    {
@@ -52,7 +52,7 @@ public class PhysicsSprite : SpriteObject {
         scale    = initial_scale.Value;
         rotation = initial_rotation;
         
-        Body = world.CreateBody(initial_position.Value.toVector2(), MathHelper.DegreesToRadians(initial_rotation), type);
+        Body = world.CreateBody(initial_position.Value.toPhysicsVector2(), MathHelper.DegreesToRadians(initial_rotation), type);
         Fixture = Body.CreateRectangle(initial_scale.Value.X, initial_scale.Value.Y, 1.0f, tainicom.Aether.Physics2D.Common.Vector2.Zero);
     }
 
@@ -62,5 +62,9 @@ public class PhysicsSprite : SpriteObject {
         
         position = Body.Position.toVector2();
         rotation = MathHelper.RadiansToDegrees(Body.Rotation);
+    }
+
+    public override void destroy() {
+        Body.World.Remove(Body);
     }
 }

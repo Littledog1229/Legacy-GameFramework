@@ -1,11 +1,6 @@
-﻿using System.Diagnostics;
-using System.Reflection;
-using ApplicationCore.Render.Texture;
+﻿using ApplicationCore.Render.Texture;
 using Engine;
 using OpenTK.Mathematics;
-using BufferUsageHint = OpenTK.Graphics.OpenGL.BufferUsageHint;
-using DrawElementsType = OpenTK.Graphics.OpenGL.DrawElementsType;
-using PrimitiveType = OpenTK.Graphics.OpenGL.PrimitiveType;
 
 namespace ApplicationCore.Render.Batch; 
 
@@ -134,8 +129,8 @@ public sealed class ShapeBatch : RenderBatch<ShapeBatch.ShapeVertex> {
             textures[i].bindTexture(i);
     }
 
-    protected override void bindShaderData() {
-        Shader.setUniformArray("uTextures", texture_ids);
+    protected override void bindShaderData(Shader shader) {
+        shader.setUniformArray("uTextures", texture_ids);
     }
 
     public struct ShapeVertex {
