@@ -13,20 +13,25 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using Sandbox.Editor;
+using Sandbox.Editor.CreationContexts;
 using Sandbox.Editor.Inspectors;
+using Sandbox.Editor.Tools;
 using Sandbox.Sprite;
 using tainicom.Aether.Physics2D.Dynamics;
 
-using NativeVector2 = System.Numerics.Vector2;
+using NativeVector2  = System.Numerics.Vector2;
 using PhysicsVector2 = tainicom.Aether.Physics2D.Common.Vector2;
 
 namespace Sandbox; 
 
 // Next up:
 // TODO: Serialize and Deserialize Scene
-// TODO: Create Context Menu (for sprite properties)
 // TODO: Click and drag sprites in scene view to re-order them
-// TODO: Sprite Editing Tools (Move, Scale, Rotate, etc... [all definable by the sprites type])
+// InProgress: Sprite Editing Tools (Move, Scale, Rotate, etc... [all definable by the sprites type])
+//    . Finished: Transform  Tool
+//    . Finished: Rotation   Tool
+//    . Finished: Scale      Tool
+//    . TODO:     Manipulate Tool [basically, Unity's box thing where you can move and adjust the bounding box]
 // TODO: Texture Manager / Atlas Manager
 
 // Far off:
@@ -46,9 +51,9 @@ public sealed class EditorScene : Scene {
     #endregion
     
     #region Scene Objects
-    private readonly List<EditorSprite> sprites       = new();
-    private readonly OrthoCamera        camera        = new();
-    private readonly World              physics_world = new();
+    public readonly List<EditorSprite> Sprites      = new();
+    public readonly OrthoCamera        Camera       = new();
+    public readonly World              PhysicsWorld = new();
 
     private bool run_physics = true;
     #endregion
@@ -56,25 +61,35 @@ public sealed class EditorScene : Scene {
     #region Editor Objects
     private readonly ImGuiController                   imgui_controller = new(RenderManager.WindowWidth, RenderManager.WindowHeight);
     private readonly Dictionary<Type, string>          editor_names     = new() {
-        { typeof(SpriteObject), "Sprite" },
+        { typeof(SpriteObject),  "Sprite" },
         { typeof(PhysicsSprite), "PhysicsSprite" },
     };
     private readonly Dictionary<Type, CustomInspector> inspectors       = new() {
         { typeof(SpriteObject),  new DefaultInspector() },
-        { typeof(PhysicsSprite), new DefaultInspector() }
+        { typeof(PhysicsSprite), new PhysicsSpriteInspector() }
     };
+    private readonly Dictionary<Type, CreationContext> contexts         = new();
+    private readonly Dictionary<string, EditorTool>    tools            = new();
 
-    private string        scene_name      = string.Empty;
-    private string        scene_path      = string.Empty;
-    private EditorSprite? selected_sprite = null;
-    
+    private readonly List<EditorTool> valid_tools = new();
+
+    private string                 scene_name = string.Empty;
+    private string                 scene_path = string.Empty;
+    private EditorSprite?          selected_sprite;
+    private SpriteCreationContext? sprite_create_context;
+    private EditorTool?            current_tool;
+
+    public bool CanUpdateSelected = true;
+
+    private bool open_sprite_create_context;
+
     private const float CAMERA_MOVE_SPEED = 1.0f;
 
     
     #region Viewport Objects
-    private NativeVector2 viewport_size;
-    private NativeVector2 viewport_offset;
-    private NativeVector2 viewport_content_offset;
+    public NativeVector2  ViewportSize;
+    public NativeVector2  ViewportOffset;
+    public NativeVector2  ViewportContentOffset;
     private NativeVector2 viewport_size_old;
     private IntPtr        viewport_texture_ptr;
     private bool          can_focus_viewport = true;
@@ -83,11 +98,11 @@ public sealed class EditorScene : Scene {
     
     private Vector2 outline_size   = new(0.075f, 0.075f);
     private Color4  outline_color  = Color4.OrangeRed;
-    private bool    render_outline = false;
+    private bool    render_outline = true;
     #endregion
     
     #region Viewport Helper Methods
-    private Vector2 ViewportMousePosition => InputManager.MousePosition - new Vector2(viewport_offset.X, viewport_offset.Y);
+    public Vector2 ViewportMousePosition => InputManager.MousePosition - new Vector2(ViewportOffset.X, ViewportOffset.Y);
     #endregion
     
     #region Scene Methods
@@ -95,10 +110,10 @@ public sealed class EditorScene : Scene {
         ImGui.LoadIniSettingsFromDisk("EditorScene.imgui.ini");
 
         // Setup Objects
-        camera.ViewSizeX = 10.0f;
+        Camera.ViewSizeX = 10.0f;
         render_batch.initialize();
         picking_batch.initialize();
-        camera.initialize();
+        Camera.initialize();
 
         #region Picking Framebuffer
         {
@@ -139,6 +154,20 @@ public sealed class EditorScene : Scene {
         ApplicationManager.Instance.TextInput  += imguiTextInput;
         ApplicationManager.Instance.MouseWheel += imguiMouseWheel;
 
+        // Setup Editor
+        contexts.Add(typeof(SpriteObject),  new SpriteCreationContext());
+        contexts.Add(typeof(PhysicsSprite), new PhysicsSpriteCreationContext(PhysicsWorld));
+        
+        tools.Add("Transform", new TransformTool(this));
+        tools.Add("Rotation",  new RotationTool(this));
+        tools.Add("Scale",     new ScaleTool(this));
+
+        current_tool = tools["Transform"];
+        
+        valid_tools.Add(tools["Transform"]);
+        valid_tools.Add(tools["Rotation"]);
+        valid_tools.Add(tools["Scale"]);
+        
         setupImgui();
     }
     public override void destroy() {
@@ -162,16 +191,12 @@ public sealed class EditorScene : Scene {
     }
 
     public override void update() {
-        // Update ImGui
-        imgui_controller.Update(ApplicationManager.Instance, Time.DeltaTime);
-        updateImgui();
-        
         var position = ViewportMousePosition;
         var in_viewport = inViewport(InputManager.MousePosition) && can_focus_viewport;
         
         if (InputManager.mouseRelease(MouseButton.Right) && in_viewport) {
             if (selected_sprite != null) {
-                selected_sprite.Sprite.Position = camera.screenToWorldSpace(position);
+                selected_sprite.Sprite.Position = Camera.screenToWorldSpace(position);
 
                 if (selected_sprite.Sprite is PhysicsSprite physics_selected) {
                     physics_selected.Body.LinearVelocity  = PhysicsVector2.Zero;
@@ -181,31 +206,35 @@ public sealed class EditorScene : Scene {
             }
         }
 
-        if (InputManager.mouseRelease(MouseButton.Left) && in_viewport) {
-            var info = picking_buffer.readPixel<PickingPixelInfo>((int)position.X, (int) viewport_size.Y - (int) position.Y, PixelFormat.RgbInteger, PixelType.UnsignedInt);
+        if (InputManager.mouseRelease(MouseButton.Left) && in_viewport && CanUpdateSelected) {
+            var info = picking_buffer.readPixel<PickingPixelInfo>((int)position.X, (int) ViewportSize.Y - (int) position.Y, PixelFormat.RgbInteger, PixelType.UnsignedInt);
             
-            select(info.ElementIndex > 0 ? sprites[(int) info.ElementIndex - 1] : null);
+            select(info.ElementIndex > 0 ? Sprites[(int) info.ElementIndex - 1] : null);
         }
 
         if (InputManager.mouseDown(MouseButton.Middle) && in_viewport) {
             var move = InputManager.MouseDelta * Time.DeltaTime * CAMERA_MOVE_SPEED;
-            camera.Position += new Vector2(-move.X, move.Y);
+            Camera.Position += new Vector2(-move.X, move.Y);
         }
         
-        foreach (var sprite in sprites)
+        foreach (var sprite in Sprites)
             sprite.update();
+        
+        // Update ImGui
+        imgui_controller.Update(ApplicationManager.Instance, Time.DeltaTime);
+        updateImgui();
     }
     public override void fixedUpdate() {
         if (!run_physics)
             return;
         
-        physics_world.Step(Time.FixedDeltaTime);
+        PhysicsWorld.Step(Time.FixedDeltaTime);
 
-        foreach (var sprite in sprites)
+        foreach (var sprite in Sprites)
             sprite.fixedUpdate();
     }
     public override void lateUpdate() {
-        foreach (var sprite in sprites)
+        foreach (var sprite in Sprites)
             sprite.lateUpdate();
     }
 
@@ -217,17 +246,17 @@ public sealed class EditorScene : Scene {
         // Enable stencil testing
         GL.Enable(EnableCap.StencilTest);
         GL.StencilOp(StencilOp.Keep, StencilOp.Keep, StencilOp.Replace);
-        GL.StencilMask(0x00); // Dont change the stencil mask
         
         // Clear the Framebuffer
         render_buffer.bind();
-        GL.Viewport(0, 0, (int) viewport_size.X, (int) viewport_size.Y);
+        GL.Viewport(0, 0, (int) ViewportSize.X, (int) ViewportSize.Y);
         RenderManager.clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
         
-        
+        GL.StencilMask(0x00); // Dont change the stencil mask
+
         // Render all sprites (besides the selected sprite)
-        render_batch.begin(camera);
-        foreach (var sprite in sprites.Where(sprite => sprite != selected_sprite))
+        render_batch.begin(Camera);
+        foreach (var sprite in Sprites.Where(sprite => sprite != selected_sprite))
             sprite.render(render_batch);
         render_batch.end();
         
@@ -238,7 +267,7 @@ public sealed class EditorScene : Scene {
             GL.StencilMask(0xFF);
             
             // Render the selected sprite
-            render_batch.begin(camera);
+            render_batch.begin(Camera);
             selected_sprite.render(render_batch);
             render_batch.end();
 
@@ -251,7 +280,7 @@ public sealed class EditorScene : Scene {
                 outline_shader.bind();
                 outline_shader.setUniform("uOutlineColor", outline_color);
             
-                picking_batch.begin(camera, outline_shader);
+                picking_batch.begin(Camera, outline_shader);
                 selected_sprite.renderOutline(picking_batch, outline_size);
                 picking_batch.end();
             }
@@ -276,13 +305,13 @@ public sealed class EditorScene : Scene {
         var old_color = RenderManager.ClearColor;
         RenderManager.ClearColor = Color4.Black;
 
-        GL.Viewport(0, 0, (int) viewport_size.X, (int) viewport_size.Y);
+        GL.Viewport(0, 0, (int) ViewportSize.X, (int) ViewportSize.Y);
         RenderManager.clear();
         
-        picking_batch.begin(camera);
+        picking_batch.begin(Camera);
 
-        for (var i = 0; i < sprites.Count; i++) {
-            var sprite = sprites[i];
+        for (var i = 0; i < Sprites.Count; i++) {
+            var sprite = Sprites[i];
             sprite.renderPicking(picking_batch, i + 1);
         }
         
@@ -306,9 +335,10 @@ public sealed class EditorScene : Scene {
         ImGui.ShowDemoWindow();
 
         updateEditorSettings();
-        updateViewport();
         updateInspector();
         updateSceneView();
+        updateToolsWindow();
+        updateViewport();
     }
 
     private void updateEditorSettings() {
@@ -318,30 +348,32 @@ public sealed class EditorScene : Scene {
         
         ImGui.End();
     }
-
     private void updateViewport() {
-        ImGui.Begin("Viewport");
+        ImGui.Begin("Viewport", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
         
         // Viewport Setup
-        viewport_size_old = viewport_size;
+        viewport_size_old = ViewportSize;
 
-        viewport_content_offset = ImGui.GetWindowContentRegionMin();
-        viewport_offset         = ImGui.GetWindowPos() + viewport_content_offset;
-        viewport_size           = ImGui.GetWindowContentRegionMax() - viewport_content_offset;
+        ViewportContentOffset = ImGui.GetWindowContentRegionMin();
+        ViewportOffset        = ImGui.GetWindowPos() + ViewportContentOffset;
+        ViewportSize          = ImGui.GetWindowContentRegionMax() - ViewportContentOffset;
 
-        viewport_focused = ImGui.IsWindowFocused();
-        ImGui.Image(viewport_texture_ptr, viewport_size, VIEWPORT_UV_0, VIEWPORT_UV_1);
-        
+        can_focus_viewport = ImGui.IsWindowHovered();
+        viewport_focused   = ImGui.IsWindowFocused();
+        ImGui.Image(viewport_texture_ptr, ViewportSize, VIEWPORT_UV_0, VIEWPORT_UV_1);
+
         // Viewport state update
-        if (viewport_size_old != viewport_size) {
-            render_buffer.resize((int) viewport_size.X, (int) viewport_size.Y);
-            picking_buffer.resize((int) viewport_size.X, (int) viewport_size.Y);
-            camera.resize((int) viewport_size.X, (int) viewport_size.Y);
+        if (viewport_size_old != ViewportSize) {
+            render_buffer.resize((int) ViewportSize.X, (int) ViewportSize.Y);
+            picking_buffer.resize((int) ViewportSize.X, (int) ViewportSize.Y);
+            Camera.resize((int) ViewportSize.X, (int) ViewportSize.Y);
         }
+        
+        // Render and handle tools
+        current_tool?.updateWidget();
         
         ImGui.End();
     }
-
     private void updateInspector() {
         ImGui.Begin("Inspector");
 
@@ -355,17 +387,16 @@ public sealed class EditorScene : Scene {
             ImGui.Text("Selected: None");
         
         
-        
+
         ImGui.End();
     }
-
     private void updateSceneView() {
         ImGui.Begin("Scene");
 
         var popup_open = false;
         
-        for (var i = 0; i < sprites.Count; i++) {
-            var sprite = sprites[i];
+        for (var i = 0; i < Sprites.Count; i++) {
+            var sprite = Sprites[i];
             if (ImGui.Selectable($"{sprite.Sprite.Identifier}##{i}", sprite == selected_sprite))
                 select(sprite);
 
@@ -381,15 +412,67 @@ public sealed class EditorScene : Scene {
         }
 
         if (!popup_open && ImGui.BeginPopupContextWindow()) {
-            if (ImGui.MenuItem("Create Sprite"))
-                createEditorSprite(new SpriteObject());
-            if (ImGui.MenuItem("Create Physics Sprite"))
-                createEditorSprite(new PhysicsSprite(physics_world, type: BodyType.Dynamic));
+            updateSpriteCreate();
             
             ImGui.EndPopup();
         }
+
+        if (open_sprite_create_context)
+            ImGui.OpenPopup("SpriteContextCreate");
+        
+        updateCreateContext();
+
+        ImGui.End();
+    }
+    private void updateToolsWindow() {
+        ImGui.Begin("Editor Tools");
+
+        var tool_name = current_tool == null ? "None" : current_tool.Identifier;
+        ImGui.Text($"Current Tool: {tool_name}");
+        ImGui.Separator();
+
+        foreach (var tool in valid_tools.Where(tool => ImGui.Selectable(tool.Identifier, tool == current_tool)))
+            setCurrentTool(tool);
+        
         
         ImGui.End();
+    }
+
+    private void updateSpriteCreate() {
+        if (ImGui.MenuItem("Create Sprite"))
+            setSpriteCreateContext(typeof(SpriteObject));
+
+        if (ImGui.MenuItem("Create Physics Sprite"))
+            setSpriteCreateContext(typeof(PhysicsSprite));
+    }
+    private void updateCreateContext() {
+        if (open_sprite_create_context) {
+            ImGui.SetNextWindowPos(ImGui.GetMainViewport().GetCenter(), ImGuiCond.Appearing, new NativeVector2(0.5f, 0.5f));
+            ImGui.SetNextWindowSize(ImGui.GetMainViewport().Size * 0.25f, ImGuiCond.Appearing);
+        }
+
+        if (sprite_create_context == null || !ImGui.BeginPopupModal("SpriteContextCreate", ref open_sprite_create_context, ImGuiWindowFlags.NoSavedSettings)) {
+            ImGui.CloseCurrentPopup();
+            ImGui.EndPopup();
+            return;
+        }
+
+        var sprite_type_name = $"{editor_names[sprite_create_context!.SpriteType]}";
+        var half_size = ImGui.CalcTextSize(sprite_type_name) / 2.0f;
+        var modal_half_size = ImGui.GetWindowSize() / 2.0f;
+        ImGui.SetCursorPos(new NativeVector2(modal_half_size.X - half_size.X, ImGui.GetCursorPosY()));
+        ImGui.Text(sprite_type_name);
+        ImGui.Separator();
+        ImGui.AlignTextToFramePadding();
+        sprite_create_context.renderImgui();
+        ImGui.Separator();
+        if (ImGui.Button("Create")) {
+            ImGui.CloseCurrentPopup();
+            createEditorSprite(sprite_create_context.create<SpriteObject>());
+            setSpriteCreateContext(null);
+        }
+        
+        ImGui.EndPopup();
     }
 
     private void imguiTextInput(TextInputEventArgs e)   { imgui_controller.PressChar((char) e.Unicode); }
@@ -397,16 +480,36 @@ public sealed class EditorScene : Scene {
     #endregion
     
     #region Editor Methods
-    private bool inViewport(Vector2 mouse_position) => mouse_position.isBetweenOrEqual(viewport_offset.toVector2(), (viewport_offset + viewport_size).toVector2());
+    private bool inViewport(Vector2 mouse_position) => mouse_position.isBetweenOrEqual(ViewportOffset.toVector2(), (ViewportOffset + ViewportSize).toVector2());
 
-    private void select(EditorSprite? sprite) => selected_sprite = sprite;
-    private void createEditorSprite(SpriteObject sprite) => sprites.Add(new EditorSprite(this, sprite));
+    private void select(EditorSprite? sprite) {
+        selected_sprite = sprite;
+        current_tool?.setSprite(sprite);
+    }
+    private void createEditorSprite(SpriteObject sprite) => Sprites.Add(new EditorSprite(this, sprite));
     private void destroyEditorSprite(EditorSprite sprite) {
         sprite.destroy();
-        sprites.Remove(sprite);
+        Sprites.Remove(sprite);
 
         if (selected_sprite == sprite)
-            selected_sprite = null;
+            select(null);
+    }
+    private void setCurrentTool(EditorTool? tool) {
+        current_tool?.setSprite(null);
+        current_tool = tool;
+        current_tool?.setSprite(selected_sprite);
+    }
+
+    private void setSpriteCreateContext(Type? type) {
+        if (type == null) {
+            open_sprite_create_context = false;
+            sprite_create_context = null;
+            return;
+        }
+        
+        open_sprite_create_context = true;
+        sprite_create_context      = contexts[type] as SpriteCreationContext;
+        sprite_create_context?.reset();
     }
     #endregion
 }

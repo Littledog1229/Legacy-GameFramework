@@ -72,6 +72,18 @@ public sealed class OrthoCamera : Camera {
 
         return new Vector2(screen_x, screen_y);
     }
+    public Vector2 screenScaleToWorldScale(Vector2 scale) {
+        var ratio_x = scale.X / Width;
+        var ratio_y = scale.Y / Height;
+        
+        var normalized_x = ratio_x * 2.0f;
+        var normalized_y = ratio_y * 2.0f;
+
+        var relative_world_x =  view_size_x * normalized_x;
+        var relative_world_y = -view_size_y * normalized_y;
+
+        return new Vector2(relative_world_x, relative_world_y);
+    }
 
     protected override void createView() {
         View = Matrix4.LookAt(new Vector3(position.X, position.Y, 10.0f), new Vector3(position.X, position.Y, 0.0f), new Vector3(0.0f, 1.0f, 0.0f));

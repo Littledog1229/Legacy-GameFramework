@@ -5,8 +5,6 @@ using tainicom.Aether.Physics2D.Dynamics;
 namespace Sandbox.Sprite; 
 
 public class PhysicsSprite : SpriteObject {
-    private readonly BodyType type;
-    
     public Body    Body    { get; private set; }
     public Fixture Fixture { get; private set; }
     
@@ -17,7 +15,9 @@ public class PhysicsSprite : SpriteObject {
                 return;
 
             position = value;
-            Body.Position = position.toPhysicsVector2();
+            //Body.Position = position.toPhysicsVector2();
+            Body.SetTransform(position.toPhysicsVector2(), MathHelper.DegreesToRadians(rotation));
+            Body.Awake = true;
         }
     }
     public override Vector2 Scale    {
@@ -29,6 +29,7 @@ public class PhysicsSprite : SpriteObject {
             scale = value;
             Body.Remove(Fixture);
             Fixture = Body.CreateRectangle(scale.X, scale.Y, 1.0f, tainicom.Aether.Physics2D.Common.Vector2.Zero);
+            Body.Awake = true;
         }
     }
     public override float   Rotation {
@@ -38,13 +39,13 @@ public class PhysicsSprite : SpriteObject {
                 return;
 
             rotation = value;
-            Body.Rotation = MathHelper.DegreesToRadians(rotation);
+            //Body.Rotation = MathHelper.DegreesToRadians(rotation);
+            Body.SetTransform(position.toPhysicsVector2(), MathHelper.DegreesToRadians(rotation));
+            Body.Awake = true;
         }
     }
 
     public PhysicsSprite(World world, Vector2? initial_scale = null, Vector2? initial_position = null, float initial_rotation = 0.0f, BodyType type = BodyType.Static) {
-        this.type = type;
-        
         initial_scale    ??= Vector2.One;
         initial_position ??= Vector2.Zero;
 
@@ -57,9 +58,6 @@ public class PhysicsSprite : SpriteObject {
     }
 
     public override void fixedUpdate() {
-        if (type == BodyType.Static) 
-            return;
-        
         position = Body.Position.toVector2();
         rotation = MathHelper.RadiansToDegrees(Body.Rotation);
     }
