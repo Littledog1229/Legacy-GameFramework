@@ -19,6 +19,8 @@ ApplicationCore/obj
 # Application Sandbox
 SandboxApplication/bin
 SandboxApplication/obj
+Sandbox3D/bin
+Sandbox3D/obj
 
 # Networking
 NetCommon/bin
@@ -29,7 +31,3 @@ NetServer/bin
 NetServer/obj
 NetClient/bin
 NetClient/obj
-
-# Sharp Minecraft
-SharpMinecraft/bin
-SharpMinecraft/obj

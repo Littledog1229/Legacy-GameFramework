@@ -2,6 +2,10 @@
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 
+using NativeVector2 = System.Numerics.Vector2;
+using NativeVector3 = System.Numerics.Vector3;
+using NativeVector4 = System.Numerics.Vector4;
+
 namespace ApplicationCore.Render; 
 
 public sealed class VertexArray : GLObject {
@@ -68,10 +72,16 @@ public sealed class VertexArray : GLObject {
             { typeof(ushort), new TypeInfo(VertexAttribPointerType.UnsignedShort, 1, 2) },
             { typeof(uint),   new TypeInfo(VertexAttribPointerType.UnsignedInt,   1, 4) },
             
-            { typeof(Vector2), new TypeInfo(VertexAttribPointerType.Float, 2, 4 * 2) },
-            { typeof(Vector3), new TypeInfo(VertexAttribPointerType.Float, 3, 4 * 3) },
-            { typeof(Vector4), new TypeInfo(VertexAttribPointerType.Float, 4, 4 * 4) },
-            { typeof(Color4),  new TypeInfo(VertexAttribPointerType.Float, 4, 4 * 4) }
+            // OpenTK Mathematics
+            { typeof(Vector2),       new TypeInfo(VertexAttribPointerType.Float, 2, 4 * 2) },
+            { typeof(Vector3),       new TypeInfo(VertexAttribPointerType.Float, 3, 4 * 3) },
+            { typeof(Vector4),       new TypeInfo(VertexAttribPointerType.Float, 4, 4 * 4) },
+            { typeof(Color4),        new TypeInfo(VertexAttribPointerType.Float, 4, 4 * 4) },
+            
+            // System.Numerics
+            { typeof(NativeVector2), new TypeInfo(VertexAttribPointerType.Float, 2, 4 * 2) },
+            { typeof(NativeVector3), new TypeInfo(VertexAttribPointerType.Float, 3, 4 * 3) },
+            { typeof(NativeVector4), new TypeInfo(VertexAttribPointerType.Float, 4, 4 * 4) }
     };
 
         private int next_index  = 0;

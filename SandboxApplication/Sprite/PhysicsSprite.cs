@@ -1,5 +1,6 @@
 ﻿using Engine.Physics;
 using OpenTK.Mathematics;
+using Sandbox.Serialization;
 using tainicom.Aether.Physics2D.Dynamics;
 
 namespace Sandbox.Sprite; 
@@ -64,5 +65,13 @@ public class PhysicsSprite : SpriteObject {
 
     public override void destroy() {
         Body.World.Remove(Body);
+    }
+
+    public override SerializedSprite serialize() {
+        var serialized = base.serialize();
+
+        serialized.Data.Add("BodyType", Body.BodyType);
+
+        return serialized;
     }
 }

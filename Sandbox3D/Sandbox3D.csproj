@@ -8,16 +8,22 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Engine\Engine.csproj" />
+      <ProjectReference Include="..\ApplicationCore\ApplicationCore.csproj" />
+      <ProjectReference Include="..\EngineCore\EngineCore.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Include="Resource\Texture\TileOverlays.png">
+      <EmbeddedResource Include="Resource\Shader\PositionColor.glsl">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </EmbeddedResource>
-      <EmbeddedResource Include="Resource\Texture\Tiles.png">
+      <None Remove="Resource\Shader\Position.glsl" />
+      <EmbeddedResource Include="Resource\Shader\Position.glsl">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="OpenTK.Mathematics" Version="4.7.7" />
     </ItemGroup>
 
 </Project>

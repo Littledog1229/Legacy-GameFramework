@@ -8,6 +8,7 @@ using Engine.Physics;
 using Engine.Scenes;
 using Engine.Utility;
 using ImGuiNET;
+using Newtonsoft.Json;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
@@ -16,6 +17,7 @@ using Sandbox.Editor;
 using Sandbox.Editor.CreationContexts;
 using Sandbox.Editor.Inspectors;
 using Sandbox.Editor.Tools;
+using Sandbox.Serialization;
 using Sandbox.Sprite;
 using tainicom.Aether.Physics2D.Dynamics;
 
@@ -41,6 +43,8 @@ public sealed class EditorScene : Scene {
     private static readonly NativeVector2 VIEWPORT_UV_0 = new(0.0f, 1.0f);
     private static readonly NativeVector2 VIEWPORT_UV_1 = new(1.0f, 0.0f);
     
+    //private static readonly Dictionary<Type, >
+
     #region Render Objects
     private readonly Shader       outline_shader  = RenderManager.getOrCreateShader("Outline", "Resource.Shader.Outline.glsl");
     private readonly Texture2D    player_texture  = new("Resource.Texture.temp_player.png");
@@ -73,8 +77,14 @@ public sealed class EditorScene : Scene {
 
     private readonly List<EditorTool> valid_tools = new();
 
-    private string                 scene_name = string.Empty;
-    private string                 scene_path = string.Empty;
+    private string                 scene_name         = string.Empty;
+    private string                 current_scene_path = string.Empty;
+    private string                 load_scene_path    = string.Empty;
+    private string                 save_scene_path    = string.Empty;
+    private string                 scene_path         = string.Empty;
+    private bool                   scene_loaded       = false;
+    private bool                   scene_dirty        = true;
+    
     private EditorSprite?          selected_sprite;
     private SpriteCreationContext? sprite_create_context;
     private EditorTool?            current_tool;
@@ -321,6 +331,21 @@ public sealed class EditorScene : Scene {
         RenderManager.ClearColor = old_color;
     }
     #endregion
+
+    public string serialize() {
+        var settings = new JsonSerializerSettings() {
+            //ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+        };
+
+        return JsonConvert.SerializeObject(Sprites.Select(editor_sprite => editor_sprite.Sprite.serialize()).ToList(), Formatting.Indented, settings);
+    }
+
+    public void deserialize(string path) {
+        using var file_stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write);
+        using var file_reader = new StreamReader(file_stream);
+        
+        //Sprites.AddRange();
+    }
     #endregion
     
     #region ImGui Methods
@@ -335,10 +360,11 @@ public sealed class EditorScene : Scene {
         ImGui.ShowDemoWindow();
 
         updateEditorSettings();
+        updateSceneManager();
         updateInspector();
         updateSceneView();
         updateToolsWindow();
-        updateViewport();
+        updateSceneViewport();
     }
 
     private void updateEditorSettings() {
@@ -348,8 +374,12 @@ public sealed class EditorScene : Scene {
         
         ImGui.End();
     }
-    private void updateViewport() {
-        ImGui.Begin("Viewport", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
+    private void updateSceneViewport() {
+        var extra_flags = ImGuiWindowFlags.None;
+        if (scene_dirty)
+            extra_flags |= ImGuiWindowFlags.UnsavedDocument;
+        
+        ImGui.Begin("Scene Viewport", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | extra_flags);
         
         // Viewport Setup
         viewport_size_old = ViewportSize;
@@ -394,7 +424,7 @@ public sealed class EditorScene : Scene {
         ImGui.Begin("Scene");
 
         var popup_open = false;
-        
+
         for (var i = 0; i < Sprites.Count; i++) {
             var sprite = Sprites[i];
             if (ImGui.Selectable($"{sprite.Sprite.Identifier}##{i}", sprite == selected_sprite))
@@ -435,6 +465,49 @@ public sealed class EditorScene : Scene {
             setCurrentTool(tool);
         
         
+        ImGui.End();
+    }
+    private void updateSceneManager() {
+        var padding_x = ImGui.GetStyle().WindowPadding.X;
+
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new NativeVector2(0.0f));
+        ImGui.Begin("Scene Manager");
+        ImGui.PopStyleVar();
+
+        ImGui.BeginTabBar("SceneManager");
+        ImGui.PushStyleVar(ImGuiStyleVar.TabRounding, 0.0f);
+        
+        if (ImGui.BeginTabItem("Load")) {
+            ImGui.Indent(padding_x);
+
+            ImGui.Text("Load Path");
+            ImGui.SameLine();
+            ImGui.InputText("##LoadScenePath", ref load_scene_path, uint.MaxValue);
+            
+            ImGui.Unindent(padding_x);
+            ImGui.EndTabItem();
+        }
+        
+        if (ImGui.BeginTabItem("Save")) {
+            ImGui.Indent(padding_x);
+
+            ImGui.Text("Save Path");
+            ImGui.SameLine();
+            ImGui.InputText("##SaveScenePath", ref save_scene_path, uint.MaxValue);
+
+            if (ImGui.Button("Test Save")) {
+                using var stream = new FileStream("test.txt", FileMode.OpenOrCreate);
+                using var file_writer = new StreamWriter(stream);
+                
+                file_writer.Write(serialize());
+            }
+            
+            ImGui.Unindent(padding_x);
+            ImGui.EndTabItem();
+        }
+        ImGui.EndTabBar();
+        
+        ImGui.PopStyleVar();
         ImGui.End();
     }
 

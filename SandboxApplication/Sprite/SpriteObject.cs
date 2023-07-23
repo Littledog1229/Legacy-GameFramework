@@ -1,6 +1,7 @@
 ﻿using ApplicationCore.Render.Batch;
 using ApplicationCore.Render.Texture;
 using OpenTK.Mathematics;
+using Sandbox.Serialization;
 
 namespace Sandbox.Sprite; 
 
@@ -25,6 +26,15 @@ public class SpriteObject {
         set => rotation = value;
     }
 
+    public SpriteObject() { }
+    public SpriteObject(SerializedSprite serialized_sprite) {
+        Identifier = (string)  serialized_sprite.Data["Identifier"];
+        position   = ((SerializableVector2)serialized_sprite.Data["Position"]).toVector2();
+        scale      = ((SerializableVector2)serialized_sprite.Data["Scale"]).toVector2();
+        rotation   = (float)   serialized_sprite.Data["Rotation"];
+        Color      = (Color4)  serialized_sprite.Data["Color"];
+    }
+    
     public virtual void update()      { }
     public virtual void lateUpdate()  { }
     public virtual void fixedUpdate() { }
@@ -34,4 +44,17 @@ public class SpriteObject {
     }
 
     public virtual void destroy() { }
+
+    public virtual SerializedSprite serialize() {
+        var serialized = new SerializedSprite();
+
+        serialized.Data.Add("Type",       GetType());
+        serialized.Data.Add("Identifier", Identifier);
+        serialized.Data.Add("Position",   new SerializableVector2(position));
+        serialized.Data.Add("Scale",      new SerializableVector2(scale));
+        serialized.Data.Add("Rotation",   rotation);
+        serialized.Data.Add("Color",      Color);
+        
+        return serialized;
+    }
 }
