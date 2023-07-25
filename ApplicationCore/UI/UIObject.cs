@@ -158,8 +158,13 @@ public abstract class UIObject {
     }
 
     private void addChildInternal(UIObject child) {
+        if (children.ContainsKey(child.Identifier))
+            child.identifier = $"{children.Count}";
+        
         children.Add(child.identifier, child);
         Transform.addChild(child.Transform);
+        
+        child.Transform.constrain();
         
         if (child.hasFocusability())
             addFocusable(child);

@@ -42,4 +42,11 @@
       <PackageReference Include="YamlDotNet" Version="13.1.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Resource\Font\arial.ttf" />
+      <Content Include="Resource\Font\arial.ttf">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
 </Project>

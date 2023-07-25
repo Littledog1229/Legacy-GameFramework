@@ -32,7 +32,7 @@ public sealed class UITestScene : Scene {
             CanFocusChildren = true
         };
 
-        var container_child = new BoxElement(Color4.White) {
+        new BoxElement(Color4.White) {
             Transform = {
                 Position = new Vector2(10, 10),
                 Size = new Vector2(100, 100)
@@ -40,6 +40,21 @@ public sealed class UITestScene : Scene {
             Focusable = true,
             Parent    = container
         };
+
+        var button = new ButtonElement {
+            Identifier    = "Button",
+            Transform     = {
+                Position = new Vector2(10, 120),
+                Size = new Vector2(200, 50)
+            },
+            NormalColor   = Color4.Orange,
+            HoveredColor  = Color4.DarkGray,
+            PressingColor = Color4.Gray,
+            Focusable     = true,
+            Parent        = container
+        };
+        
+        button.Transform.addConstraint(new PixelConstraint(PixelConstraint.ConstraintSide.Right, 10));
         
         UIManager.Root.addChild(box);
         UIManager.Root.addChild(container);
@@ -48,20 +63,19 @@ public sealed class UITestScene : Scene {
     }
 
     private float resize_speed = 100.0f;
-    private bool inc = true;
+    private bool  inc = true;
 
     public override void update() {
-        if (inc) {
-            box.Transform.Position       += new Vector2(Time.DeltaTime * resize_speed, 0.0f);
-            container.Transform.Position += new Vector2(Time.DeltaTime * resize_speed, 0.0f);
-            
-            if (box.Transform.Size.X < 100)
+        /*if (inc) {
+            container.Transform.Size += new Vector2(Time.DeltaTime * resize_speed, 0.0f);
+
+            if (container.Transform.Size.X > (RenderManager.WindowWidth - 200))
                 inc = false;
         } else {
-            box.Transform.Position       -= new Vector2(Time.DeltaTime * resize_speed, 0.0f);
-            container.Transform.Position -= new Vector2(Time.DeltaTime * resize_speed, 0.0f);
-            if (box.Transform.Position.X < 100.0f)
+            container.Transform.Size -= new Vector2(Time.DeltaTime * resize_speed, 0.0f);
+
+            if (container.Transform.Size.X < 100)
                 inc = true;
-        }
+        }*/
     }
 }

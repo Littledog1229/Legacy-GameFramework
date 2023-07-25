@@ -73,8 +73,14 @@ public class UITransform {
         }
     }
 
-    public void addConstraint    (UIConstraint constraint) => constraints.Add(constraint);
-    public void removeConstraint (UIConstraint constraint) => constraints.Remove(constraint);
+    public void addConstraint    (UIConstraint constraint) {
+        constraints.Add(constraint);
+        constrain();
+    }
+    public void removeConstraint (UIConstraint constraint) {
+        constraints.Remove(constraint);
+        constrain();
+    }
     public void clearConstraints ()                        => constraints.Clear();
     
     public void constrain         () {

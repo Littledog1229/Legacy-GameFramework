@@ -8,6 +8,8 @@
 
     <ItemGroup>
       <PackageReference Include="OpenTK" Version="4.7.7" />
+      <PackageReference Include="SharpFont" Version="4.0.1" />
+      <PackageReference Include="SharpFont.Portable" Version="4.0.1" />
       <PackageReference Include="StbImageSharp" Version="2.27.13" />
     </ItemGroup>
 
@@ -22,6 +24,17 @@
       <EmbeddedResource Include="Resource\Shader\UIShader.glsl">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="x64\freetype6.dll" />
+      <Content Update="freetype6.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <None Remove="freetype6.dll" />
+      <Content Include="freetype6.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

@@ -24,6 +24,7 @@ public sealed class SandboxApp : Application {
         
         //SceneManager.addScene(new LegacyEditorScene(), SceneManager.SceneAddMode.Additive);
         //SceneManager.addScene(new EditorScene());
-        SceneManager.addScene(new UITestScene());
+        //SceneManager.addScene(new UITestScene());
+        SceneManager.addScene(new FontTestingScene());
     }
 }

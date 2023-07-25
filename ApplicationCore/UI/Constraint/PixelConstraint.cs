@@ -15,10 +15,13 @@ public sealed class PixelConstraint : UIConstraint {
     public override void transformed   (UITransform transform) => apply(transform);
 
     private void apply(UITransform transform) {
+        if (transform.Parent == null)
+            return;
+        
         var parent   = transform.Parent!;
         var parent_size = parent.Size;
         var offset      = transform.Position;
-        var max        = parent_size - offset;
+        var max         = parent_size - offset;
 
         transform.RawSize = Side switch {
             ConstraintSide.Bottom => new Vector2(transform.Size.X, max.Y - Pixels),
