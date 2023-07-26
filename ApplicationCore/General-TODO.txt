@@ -1,0 +1,4 @@
+﻿TODO: Rendering:
+TODO:  . Rendering Pipeline (make RenderManager contain general stuff, but make the pipeline manage the application render state)
+
+TODO:

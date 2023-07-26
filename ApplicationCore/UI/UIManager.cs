@@ -16,7 +16,7 @@ namespace ApplicationCore.UI;
 // TODO: Make UI based on the top-right of the screen.
 
 public sealed class UIManager : EngineSystem {
-    private static UIManager instance { get; set; }
+    private static UIManager instance { get; set; } = null!;
     
     public static UIObject  Root          { get; } = new RootPanel();
     public static UIObject? FocusedObject { get; private set; }
