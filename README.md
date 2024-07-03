@@ -15,13 +15,6 @@ resource streams in C#). Its been crazy to look back at this project and see how
 looks almost exactly the same as how I still do it in my modern projects).
 
 I have since (maybe like, a week or two ago) started casually working on something similar to this in C# just to both refamiliarize myself with it, but to also create something I can be proud of and reimplement a white-whale project of mine that I have had
-for a while now (it's based on an **old Unity prototype** I plan on ripping from my Unity account [using Unity's old VCS stuff]). This new project is using [Veldrid](https://veldrid.dev/) instead of [OpenTK](https://opentk.net/), and personally I think
-I am starting to prefer the way it's API is laid out. I've tried it in the past and got stuck since its similar to the API structure Vulkan uses (descriptors man, they were tough for 16 year old me), but now I was finally able to approach and conquor
-some of the challenges I had faced (take that, immutable ResourceSets, I found out how to write my Sprite Batch!). Honestly though if I hadn't ever worked with C++ I may have never even branched out to working with thousand-line triangle, and im so glad that
-I decided early 2024 to give it a shot ([in a repository available here](https://github.com/Littledog1229/VulkanLearning), though be wary as it may not even work [its also a really big mess]).
+for a while now (it's based on an [old Unity prototype](https://github.com/Littledog1229/2D-Party-Game-Legacy) I plan on ripping from my Unity account [using Unity's old VCS stuff]). This new project is using [Veldrid](https://veldrid.dev/) instead of [OpenTK](https://opentk.net/), and personally I think I am starting to prefer the way it's API is laid out. I've tried it in the past and got stuck since its similar to the API structure Vulkan uses (descriptors man, they were tough for 16 year old me), but now I was finally able to approach and conquor some of the challenges I had faced (take that, immutable ResourceSets, I found out how to write my Sprite Batch!). Honestly though if I hadn't ever worked with C++ I may have never even branched out to working with thousand-line triangle, and im so glad that I decided early 2024 to give it a shot ([in a repository available here](https://github.com/Littledog1229/VulkanLearning), though be wary as it may not even work [its also a really big mess]).
 
-Gettng back into the swing with C# has been great, and its been a nice break from C++. Looking back on projects like this has been crazy fun, and I thank whoever is reading this (whether it be an employer, or some random person browning my repositories).
-
-
-
-**[TODO: put repository link to that Unity prototype where the words are bolded]**
+Gettng back into the swing with C# has been great, and its been a nice break from C++. Looking back on projects like this has been crazy fun, and I thank whoever is reading this (whether it be an employer, or some random person browning my repositories) for taking the time out of their day to learn about an old project of mine.
