@@ -1,5 +1,7 @@
-﻿using ApplicationCore.Render.Batch;
+﻿using ApplicationCore.Render;
+using ApplicationCore.Render.Batch;
 using ApplicationCore.Render.Camera;
+using ApplicationCore.Render.Pipeline;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Engine;
@@ -14,7 +16,7 @@ using ECSWorld     = Arch.Core.World;
 
 namespace Sandbox;
 
-public struct TransformComponent {
+public struct TransformComponent   {
     public Vector2 Position { get; set; }
     public Vector2 Scale    { get; set; }
     public float   Rotation { get; set; }
@@ -27,14 +29,12 @@ public struct TransformComponent {
         Layer    = 0.0f;
     }
 }
-
 public struct BoxRendererComponent {
     public Color4 Color { get; set; }
 
     public BoxRendererComponent()             { Color = Color4.White; }
     public BoxRendererComponent(Color4 color) { Color = color; }
 }
-
 public struct BoxColliderComponent {
     public Vector2 Size { get; }
 
@@ -77,11 +77,19 @@ public sealed class EcsScene : Scene {
         var box_entity = ecs_world.Create(new TransformComponent(), new BoxRendererComponent(Color4.SaddleBrown), new BoxColliderComponent(Vector2.One));
         box_entity.Add(new RigidbodyComponent(box_entity, physics_world, BodyType.Dynamic));
 
+        var box2_entity = ecs_world.Create(new TransformComponent(), new BoxRendererComponent(Color4.SaddleBrown), new BoxColliderComponent(Vector2.One));
+        box2_entity.Add(new RigidbodyComponent(box2_entity, physics_world, BodyType.Dynamic));
+        
+        var box3_entity = ecs_world.Create(new TransformComponent(), new BoxRendererComponent(Color4.SaddleBrown), new BoxColliderComponent(Vector2.One));
+        box3_entity.Add(new RigidbodyComponent(box3_entity, physics_world, BodyType.Dynamic));
+        
         batch  = new ShapeBatch();
         camera = new OrthoCamera();
         
         batch.initialize();
         camera.initialize();
+
+        RenderManager.getActiveRenderPipeline<DefaultRenderPipeline>().OnRender += render;
     }
 
     public override void fixedUpdate() {
@@ -93,7 +101,7 @@ public sealed class EcsScene : Scene {
         });
     }
 
-    public override void render() {
+    private void render(RenderPipeline pipeline) {
         batch.begin(camera);
 
         ecs_world.Query(box_description, (ref TransformComponent transform, ref BoxRendererComponent renderer) => {
@@ -106,5 +114,7 @@ public sealed class EcsScene : Scene {
     public override void destroy() {
         batch.destroy();
         ecs_world.Dispose();
+        
+        RenderManager.getActiveRenderPipeline<DefaultRenderPipeline>().OnRender -= render;
     }
 }

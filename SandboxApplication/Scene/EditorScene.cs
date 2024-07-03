@@ -2,6 +2,7 @@
 using ApplicationCore.Render;
 using ApplicationCore.Render.Batch;
 using ApplicationCore.Render.Camera;
+using ApplicationCore.Render.Pipeline;
 using ApplicationCore.Render.Texture;
 using Engine;
 using Engine.Physics;
@@ -29,6 +30,7 @@ namespace Sandbox;
 // Next up:
 // TODO: Serialize and Deserialize Scene
 // TODO: Click and drag sprites in scene view to re-order them
+// TODO: Migrate to RenderPipeline system
 // InProgress: Sprite Editing Tools (Move, Scale, Rotate, etc... [all definable by the sprites type])
 //    . Finished: Transform  Tool
 //    . Finished: Rotation   Tool
@@ -164,6 +166,9 @@ public sealed class EditorScene : Scene {
         ApplicationManager.Instance.TextInput  += imguiTextInput;
         ApplicationManager.Instance.MouseWheel += imguiMouseWheel;
 
+        RenderManager.getActiveRenderPipeline<DefaultRenderPipeline>().OnRender += render;
+
+
         // Setup Editor
         contexts.Add(typeof(SpriteObject),  new SpriteCreationContext());
         contexts.Add(typeof(PhysicsSprite), new PhysicsSpriteCreationContext(PhysicsWorld));
@@ -186,7 +191,9 @@ public sealed class EditorScene : Scene {
 
         ApplicationManager.Instance.TextInput  -= imguiTextInput;
         ApplicationManager.Instance.MouseWheel -= imguiMouseWheel;
-        
+
+        RenderManager.getActiveRenderPipeline<DefaultRenderPipeline>().OnRender -= render;
+
         // Destroy Render Objects
         outline_shader.destroy();
         player_texture.destroy();
@@ -249,7 +256,8 @@ public sealed class EditorScene : Scene {
     }
 
     #region Rendering
-    public override void render() {
+    // TODO: Migrate to RenderPipeline system
+    public void render(RenderPipeline pipeline) {
         renderPicking();
         
         #region Render Scene

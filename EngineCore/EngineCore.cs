@@ -24,9 +24,9 @@ public static class EngineCore {
     public static void update()      => ENGINE_SYSTEMS.ForEach(system => system.update());
     public static void lateUpdate()  => ENGINE_SYSTEMS.ForEach(system => system.lateUpdate());
     public static void fixedUpdate() => ENGINE_SYSTEMS.ForEach(system => system.fixedUpdate());
-    public static void preRender()   => ENGINE_SYSTEMS.ForEach(system => system.preRender());
+    /*public static void preRender()   => ENGINE_SYSTEMS.ForEach(system => system.preRender());
     public static void render()      => ENGINE_SYSTEMS.ForEach(system => system.render());
-    public static void postRender()  => ENGINE_SYSTEMS.ForEach(system => system.postRender());
+    public static void postRender()  => ENGINE_SYSTEMS.ForEach(system => system.postRender());*/
 
     public static void registerEngineSystem<T>() where T : EngineSystem, new()  => ENGINE_SYSTEMS.Add(new T());
     public static void registerEngineSystem<T>(T system) where T : EngineSystem => ENGINE_SYSTEMS.Add(system);

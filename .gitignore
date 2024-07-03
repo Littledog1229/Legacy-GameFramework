@@ -9,6 +9,8 @@ EngineSandbox/bin
 EngineSandbox/obj
 Prototype/bin
 Prototype/obj
+WaveSurvival/bin
+WaveSurvival/obj
 
 # New EngineCore and ApplicationCore
 EngineCore/bin

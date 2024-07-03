@@ -12,7 +12,7 @@ public abstract class EngineSystem {
     protected internal virtual void lateUpdate()  { } // Called last (before rendering), primarily used for finalizing state (such as updating input states for the next frame)
     protected internal virtual void fixedUpdate() { } // Called (potentially) at the very beginning of the update frame, used for updating physics (and can happen multiple times before any updates)
     
-    protected internal virtual void preRender()  { } // Called right before the current frame is rendered, used for updating framebuffer states
+    /*protected internal virtual void preRender()  { } // Called right before the current frame is rendered, used for updating framebuffer states
     protected internal virtual void render()     { } // Called during the render phase of the application, used for rendering things to the screen (or other framebuffers)
-    protected internal virtual void postRender() { } // Called after all rendering is concluded, and before the renderer swaps the main framebuffer
+    protected internal virtual void postRender() { } // Called after all rendering is concluded, and before the renderer swaps the main framebuffer*/
 }

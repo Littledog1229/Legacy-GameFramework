@@ -130,7 +130,7 @@ public sealed class GeneratorScene : Scene {
         camera.Position = rot_pos;
     }
 
-    public override void render() {
+    /*public override void render() {
         GL.Enable(EnableCap.DepthTest);
         GL.Enable(EnableCap.CullFace);
         GL.CullFace(CullFaceMode.Back);
@@ -141,5 +141,5 @@ public sealed class GeneratorScene : Scene {
         array.bind();
         
         array.drawElements(PrimitiveType.Triangles, 36, DrawElementsType.UnsignedInt, 0);
-    }
+    }*/
 }

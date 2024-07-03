@@ -87,17 +87,13 @@ public sealed class ApplicationManager : GameWindow {
         
         // PreRender all engine systems
         RenderManager.preRender();
-        EngineCore.preRender();
         Application.preRender();
         
         // Render all engine systems
         RenderManager.render();
-        EngineCore.render();
-        Application.render();
         
         // PostRender all engine systems
         Application.postRender();
-        EngineCore.postRender();
         RenderManager.postRender();
         
         SwapBuffers();

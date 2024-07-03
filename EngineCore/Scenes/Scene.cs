@@ -20,7 +20,7 @@ public abstract class Scene {
     public virtual void fixedUpdate() { }
     public virtual void lateUpdate()  { }
     
-    public virtual void preRender()  { }
+    /*public virtual void preRender()  { }
     public virtual void render()     { }
-    public virtual void postRender() { }
+    public virtual void postRender() { }*/
 }

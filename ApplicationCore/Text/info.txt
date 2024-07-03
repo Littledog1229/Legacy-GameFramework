@@ -1,2 +1,20 @@
 ﻿Will be done using:
  . https://github.com/Robmaister/SharpFont
+ 
+ 
+ 
+I got everything working in ApplicationSandbox, its just not good. This made me dig up and old project and look at how
+atlas packing was done in there (any code is Java 11):
+ . First you get an estimated width for the image: int estimated_width = (int) Math.sqrt(font.getNumGlyphs()) * font.getSize() + 1;
+ . Load all of the characters and information into the texture
+ . That's basically it
+ 
+Font Atlas' are fairly uniform in size, so they should be significantly easier to pack than textures of random size,
+however a decent looking implementation is: http://www.blackpawn.com/texts/lightmaps/default.html
+ . Found as a response to this stackoverflow question: https://gamedev.stackexchange.com/questions/2829/texture-packing-algorithm
+
+The comment suggesting this gives an interesting way of sorting the sprites: by perimeter
+ . This should weed out (by moving to the front) tall + thin or short + wide images (since they have a low area, but higher perimeter) for 1st order approximation
+
+Actually creating and rendering the quads can be found on LearnOpenGL: https://learnopengl.com/In-Practice/Text-Rendering
+ . They use individual textures for each letter (recommending texture packing at the end), so it will mainly be used for quad generation

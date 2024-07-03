@@ -14,7 +14,7 @@ uniform mat4 uProjection;
 uniform mat4 uView;
 
 void main() {
-    gl_Position   = uProjection * uView * vec4(Position.xy, 0, 1);
+    gl_Position   = uProjection * uView * vec4(Position.xyz, 1);
     fColor        = Color;
     fUV           = UV;
     fTextureCoord = TextureCoord;

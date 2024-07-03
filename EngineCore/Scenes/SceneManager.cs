@@ -74,7 +74,7 @@ public sealed class SceneManager : EngineSystem {
             scene.lateUpdate();
     }
 
-    protected internal override void preRender() {
+    /*protected internal override void preRender() {
         foreach (var scene in active_scenes)
             scene.preRender();
     }
@@ -85,5 +85,5 @@ public sealed class SceneManager : EngineSystem {
     protected internal override void postRender() {
         foreach (var scene in active_scenes)
             scene.postRender();
-    }
+    }*/
 }

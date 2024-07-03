@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using System.Reflection;
 using ApplicationCore.Render.Buffer;
+using ApplicationCore.Render.Pipeline;
 using ApplicationCore.Render.Texture;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
@@ -21,6 +22,8 @@ public static class RenderManager {
 
     public static Action<int, int>? OnResize { get; set; } = null;
 
+    public static RenderPipeline ActivePipeline { get; set; } = new DefaultRenderPipeline();
+
     public static void setClearColor(Color color)  => GL.ClearColor(color);
     public static void setClearColor(Color4 color) => GL.ClearColor(color);
     public static void setClearColor(float r, float g, float b, float a = 1.0f) => GL.ClearColor(r, g, b, a);
@@ -33,7 +36,8 @@ public static class RenderManager {
 
         return shader;
     }
-
+    public static T getActiveRenderPipeline<T>() where T : RenderPipeline => (T)ActivePipeline; 
+    
     private static Color4 stored_clear_color = Color4.Black;
     
     private static List<VertexBuffer>         vertex_buffers = new();
@@ -66,11 +70,13 @@ public static class RenderManager {
         OnResize?.Invoke(width, height);
     }
     
-    internal static void initialize() { }
+    internal static void initialize() { ActivePipeline.initialize(); }
     internal static void start()      { }
     internal static void unload()     { }
 
     internal static void destroy() {
+        //TODO: Destroy ActivePipeline
+        
         Console.WriteLine("RenderManager - Disposing Objects:");
         Console.WriteLine($" . Vertex Arrays:  {vertex_arrays.Count}");
         Console.WriteLine($" . Vertex Buffers: {vertex_buffers.Count}");
@@ -95,9 +101,9 @@ public static class RenderManager {
     }
 
     internal static void preRender() {
-        GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-        clear();
+        ActivePipeline.preparePresentationBuffer();
     }
-    internal static void render()     { }
+
+    internal static void render() => ActivePipeline.render();
     internal static void postRender() { }
 }

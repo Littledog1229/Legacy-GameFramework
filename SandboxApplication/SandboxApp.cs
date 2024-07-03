@@ -1,5 +1,6 @@
 ﻿using ApplicationCore.Application;
 using ApplicationCore.Render;
+using ApplicationCore.Render.Pipeline;
 using ApplicationCore.UI;
 using Engine.Physics;
 using Engine.Scenes;
@@ -7,7 +8,7 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 
-namespace Sandbox; 
+namespace Sandbox;
 
 // TODO: Migrate Scene Editor stuff out
 public sealed class SandboxApp : Application {
@@ -21,11 +22,17 @@ public sealed class SandboxApp : Application {
 
     protected override void initialize() {
         RenderManager.ClearColor = Color4.Gray;
-        
+
+        RenderManager.getActiveRenderPipeline<DefaultRenderPipeline>().OnRender += UIManager.render;
+
         //SceneManager.addScene(new LegacyEditorScene(), SceneManager.SceneAddMode.Additive);
-        //SceneManager.addScene(new EditorScene());
+        SceneManager.addScene(new EditorScene());
         //SceneManager.addScene(new UITestScene());
         //SceneManager.addScene(new FontTestingScene());
-        SceneManager.addScene(new EcsScene());
+        //SceneManager.addScene(new EcsScene());
+    }
+
+    protected override void destroy() {
+        RenderManager.getActiveRenderPipeline<DefaultRenderPipeline>().OnRender -= UIManager.render;
     }
 }

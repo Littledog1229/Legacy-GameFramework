@@ -1,4 +1,6 @@
-﻿using ApplicationCore.Application;
+﻿using System.Diagnostics;
+using ApplicationCore.Application;
+using ApplicationCore.Render;
 using ApplicationCore.Render.Camera;
 using ApplicationCore.UI.Elements;
 using Engine;
@@ -26,6 +28,8 @@ public sealed class UIManager : EngineSystem {
 
     private UICamera camera = null!;
     private UIBatch  batch  = null!;
+
+    public static void render(RenderPipeline pipeline) => instance.internalRender(pipeline);
     
     public static UIManager create() {
         if (instance != null!)
@@ -61,7 +65,7 @@ public sealed class UIManager : EngineSystem {
         Root.update();
     }
 
-    protected override void render() {
+    private void internalRender(RenderPipeline pipeline) {
         batch.begin(camera);
         Root.render(batch);
         batch.end();
